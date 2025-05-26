@@ -5,6 +5,7 @@ import {ActivatedRoute, Router } from '@angular/router';
 import { ServiciosService } from '../../core/services/servicios.service';
 import { ResenaService } from '../../core/services/resenas.service';
 import { CommonModule } from '@angular/common';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-prinservicios',
@@ -50,6 +51,21 @@ export class PrinserviciosComponent implements OnInit{
       this.isLoading = false;
     });
   }
+    
+  toggleFavorito(servicio: any, event: MouseEvent) {
+      event.stopPropagation();
+      if (servicio.isFavorito) {
+        this.servicioService.desmarcarFavorito(servicio.id).subscribe({
+          next: () => servicio.isFavorito = false,
+          error: () => Swal.fire('Error', 'No se pudo quitar de favoritos', 'error')
+        });
+      } else {
+        this.servicioService.marcarFavorito(servicio.id).subscribe({
+          next: () => servicio.isFavorito = true,
+          error: () => Swal.fire('Error', 'No se pudo añadir a favoritos', 'error')
+        });
+      }
+    }
   verDetallesServicios(id: number): void {
     this.router.navigate([`/serviciosdetalle/${id}`]); 
   }

@@ -87,11 +87,16 @@
                         </h3>
 
                         <!-- Si es array, listamos con getIterable() -->
-                        <ul *ngIf="entry.value instanceof Array; else singleValue" class="list-disc ml-6 mt-1">
+                        <ul *ngIf="isArray(entry.value); else singleValue" class="list-disc ml-6 mt-1">
                             <li *ngFor="let item of getIterable(entry.value)">
                                 {{ item }}
                             </li>
                         </ul>
+
+                        <ng-template #singleValue>
+                            {{ entry.value }}
+                        </ng-template>
+
 
                         <!-- Si no es array, mostramos su valor -->
                         <ng-template #singleValue>

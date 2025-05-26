@@ -211,16 +211,17 @@ export class DetprinserviciosComponent implements OnInit {
     this.currentSlide = (this.currentSlide + 1) % len;
   }
 
-  isArray(val: any): boolean {
-    return Array.isArray(val);
-  }
+isArray(val: any): val is any[] {
+  return Array.isArray(val);
+}
+
 
   getIterable(val: any): any[] {
     return Array.isArray(val) ? val : [];
   }
 }
 
-interface CartItem {
+export interface CartItem {
   id: number;
   nombre: string;
   precio: number;

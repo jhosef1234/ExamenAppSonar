@@ -266,6 +266,16 @@ export const routes: Routes = [
           import('./business/misreservas/misreservas.component').then(m => m.MisreservasComponent),
       },
       {
+        path: 'mispagos',
+        loadComponent: () =>
+          import('./business/mispagos/mispagos.component').then(m => m.MispagosComponent),
+      },
+      {
+        path: 'misfavoritos',
+        loadComponent: () =>
+          import('./business/misfavoritos/misfavoritos.component').then(m => m.MisfavoritosComponent),
+      },
+      {
         path: 'lugardetalle/:id',
         loadComponent: () =>
           import('./business/prinlugares/detprinlugares/detprinlugares.component').then(m => m.DetprinlugaresComponent),

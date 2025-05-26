@@ -3,34 +3,35 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 
 import { NavbarComponent } from '../navbar/navbar.component';
-import { EmprendimientoService } from '../../core/services/emprendimiento.service';
 import { SlidersService } from '../../core/services/sliders.service';
-
-import { initFlowbite } from 'flowbite';
-import { register } from 'swiper/element/bundle';
 import { ServiciosService } from '../../core/services/servicios.service';
 import { PaqueteTuristicoService } from '../../core/services/paquetes-turisticos.service';
 import { ResenaService } from '../../core/services/resenas.service';
+
+import { initFlowbite } from 'flowbite';
+import { register } from 'swiper/element/bundle';
 import Swal from 'sweetalert2';
 
-// Registrar componentes personalizados de Swiper (solo si los usas en HTML)
 register();
 
 @Component({
   selector: 'app-principal',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, RouterModule],
+  imports: [
+    CommonModule,
+    NavbarComponent,
+    RouterModule
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.css'
 })
 export class PrincipalComponent implements OnInit {
   sliders: any[] = [];
-  paquetesTuristicos: any[] = []; // Aquí almacenamos la lista de paquetes turísticos
-  isLoading: boolean = false;
-  serviciosAlojamiento: any[] = [];  // Variable para almacenar los servicios de alojamiento
+  paquetesTuristicos: any[] = [];
+  serviciosAlojamiento: any[] = [];
   serviciosExperiencia: any[] = [];
-  tipoServicioId: string = '';
+  isLoading: boolean = false;
 
   constructor(
     private slidersService: SlidersService,
@@ -47,83 +48,86 @@ export class PrincipalComponent implements OnInit {
     this.obtenerPaquetesTuristicos();
   }
 
+  private inicializarFavoritos(servicios: any[]) {
+    servicios.forEach(s => s.isFavorito = s.isFavorito ?? false);
+  }
 
   cargarSliders(): void {
     this.slidersService.listarSliders().subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.sliders = res.data ?? res;
-  
-        // Esperar a que Angular renderice los elementos del DOM
-        setTimeout(() => {
-          initFlowbite(); // Inicializa carrusel correctamente
-        }, 0);
+        setTimeout(() => initFlowbite(), 0);
       },
-      error: (err) => {
-        console.error('Error al cargar sliders:', err);
-      }
+      error: err => console.error('Error al cargar sliders:', err)
     });
   }
+
   obtenerServiciosConReseñas(): void {
-    this.tipoServicioId = '3';
-    this.isLoading = true; // Indicamos que estamos cargando los datos
-    this.servicioService.listarServiciosPorTipo(this.tipoServicioId).subscribe((res: any) => {
-      this.serviciosAlojamiento = res;
+    this.isLoading = true;
+    this.servicioService.listarServiciosPorTipo('3').subscribe({
+      next: (res: any[]) => {
+        this.serviciosAlojamiento = res;
+        this.inicializarFavoritos(this.serviciosAlojamiento);
 
-      // Para cada servicio, obtenemos el promedio de calificación y las reseñas
-      this.serviciosAlojamiento.forEach(servicio => {
-        // Obtener el promedio de calificación
-        this.resenaService.obtenerPromedioDeCalificacion(servicio.id).subscribe((promedio: any) => {
-          servicio.promedioCalificacion = promedio.promedioCalificacion; // Asignamos el promedio
-          servicio.totalResenas = promedio.totalResenas; // Asignamos el total de reseñas
+        this.serviciosAlojamiento.forEach(servicio => {
+          this.resenaService.obtenerPromedioDeCalificacion(servicio.id)
+            .subscribe(prom => {
+              servicio.promedioCalificacion = prom.promedioCalificacion;
+              servicio.totalResenas = prom.totalResenas;
+            });
+
         });
 
-        // Obtener las reseñas
-        this.resenaService.obtenerReseñas().subscribe((reseñas: any) => {
-          servicio.reseñas = reseñas.filter((resena: any) => resena.servicioId === servicio.id);
-        });
-      });
-
-      this.isLoading = false; // Terminamos de cargar los datos
+        this.isLoading = false;
+      },
+      error: err => {
+        console.error('Error al cargar servicios de alojamiento:', err);
+        this.isLoading = false;
+      }
     });
   }
-  
+
   obtenerServiciosPorTipoExperiencia(): void {
-    this.tipoServicioId = '8';
-    this.servicioService.listarServiciosPorTipo(this.tipoServicioId).subscribe(
-      (res: any) => {
-        console.log('Servicios por tipo Experiencia:', res);
-        if (res) {
-          this.serviciosExperiencia = res;  // Guarda los servicios de experiencia obtenidos
-        } else {
-          console.error('Error al obtener los servicios de Experiencia', res);
-        }
+    this.servicioService.listarServiciosPorTipo('8').subscribe({
+      next: (res: any[]) => {
+        this.serviciosExperiencia = res;
+        this.inicializarFavoritos(this.serviciosExperiencia);
       },
-      error => {
-        console.error('Error en la solicitud de servicios por tipo Experiencia', error);
-      }
-    );
+      error: err => console.error('Error al cargar servicios de experiencia:', err)
+    });
   }
+
   obtenerPaquetesTuristicos(): void {
-    this.isLoading = true; // Indicamos que la solicitud está en proceso
-    this.paqueteTuristicoService.listarPaquetesTuristicos().subscribe(
-      (res: any) => {
-        this.paquetesTuristicos = res; // Guardamos la respuesta en la variable
-        console.log('Paquetes turísticos obtenidos:', res);
+    this.isLoading = true;
+    this.paqueteTuristicoService.listarPaquetesTuristicos().subscribe({
+      next: (res: any[]) => {
+        this.paquetesTuristicos = res;
       },
-      (error) => {
-        console.error('Error al obtener paquetes turísticos:', error);
-      },
-      () => {
-        this.isLoading = false; // Indicamos que la solicitud ha finalizado
-      }
-    );
+      error: err => console.error('Error al cargar paquetes turísticos:', err),
+      complete: () => this.isLoading = false
+    });
+  }
+
+  toggleFavorito(servicio: any, event: MouseEvent) {
+    event.stopPropagation();
+    if (servicio.isFavorito) {
+      this.servicioService.desmarcarFavorito(servicio.id).subscribe({
+        next: () => servicio.isFavorito = false,
+        error: () => Swal.fire('Error', 'No se pudo quitar de favoritos', 'error')
+      });
+    } else {
+      this.servicioService.marcarFavorito(servicio.id).subscribe({
+        next: () => servicio.isFavorito = true,
+        error: () => Swal.fire('Error', 'No se pudo añadir a favoritos', 'error')
+      });
+    }
   }
 
   verDetallesPaquete(id: number): void {
-    this.router.navigate([`/paquetesdetalle/${id}`]); 
-  }
-    verDetallesServicios(id: number): void {
-    this.router.navigate([`/serviciosdetalle/${id}`]); 
+    this.router.navigate([`/paquetesdetalle/${id}`]);
   }
 
+  verDetallesServicios(id: number): void {
+    this.router.navigate([`/serviciosdetalle/${id}`]);
+  }
 }

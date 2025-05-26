@@ -57,7 +57,7 @@ export class FormServiciosComponent implements OnInit {
     private supabaseService: SupabaseService,
     private route: ActivatedRoute,
     private router: Router,
-    private authService:AuthService
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -85,7 +85,7 @@ export class FormServiciosComponent implements OnInit {
     // cargar emprendimientos
     this.emprendimientoService.listarEmprendimientos().subscribe({
       next: data => this.emprendimientos = data.emprendimientos || data,
-      error: err => Swal.fire('Error', 'No se pudieron cargar emprendimientos', 'error')
+      error: err => Swal.fire('Error', 'No se pudieron cargar emprendimientos', err)
     });
 
     const id = this.route.snapshot.paramMap.get('id');
@@ -132,7 +132,7 @@ export class FormServiciosComponent implements OnInit {
         });
     }
   }
-    tieneRol(roles: string | string[]): boolean {
+  tieneRol(roles: string | string[]): boolean {
     // Si roles es un string, lo convertimos a un arreglo para que sea más fácil de manejar
     const rolesArray = Array.isArray(roles) ? roles : [roles];
 

@@ -31,13 +31,13 @@ module.exports = function (config) {
 
     reporters: ['progress', 'kjhtml'],
 
-    //browsers: ['Chrome'],     // <— cambia aquí
-    //singleRun: false,         // <— para que no salga al terminar
-    //autoWatch: true,                // salga tras la ejecución
+    // browsers: ['Chrome'],     // <— cambia aquí
+    // singleRun: false,         // <— para que no salga al terminar
+    // autoWatch: true,                // salga tras la ejecución
 
 
     browsers: ['ChromeHeadless'],  // headless para CI/Jenkins
     singleRun: true,               // salga tras la ejecución
-    restartOnFileChange:false
-});
+    restartOnFileChange: false
+  });
 };

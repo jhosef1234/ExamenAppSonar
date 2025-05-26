@@ -95,10 +95,10 @@
             <button routerLink="/misreservas" class="block px-4 w-full py-2 hover:bg-gray-100">Mis reservas</button>
           </li>
           <li>
-            <button (click)="logout()" class="block px-4 w-full py-2 hover:bg-gray-100">Pagos pendientes</button>
+            <button routerLink="/mispagos" class="block px-4 w-full py-2 hover:bg-gray-100">Mis Pagos</button>
           </li>
           <li>
-            <button (click)="logout()" class="block px-4 w-full py-2 hover:bg-gray-100">Pagos realizados</button>
+            <button routerLink="/misfavoritos" class="block px-4 w-full py-2 hover:bg-gray-100">Mis favoritos</button>
           </li>
           <li>
             <button (click)="logout()" class="block px-4 w-full py-2 hover:bg-gray-100"><i
@@ -113,7 +113,7 @@
   <div *ngIf="!ocultarNav"
     class="flex gap-6 overflow-x-auto whitespace-nowrap text-sm text-gray-600 pl-10 pr-10 pt-4 pb-4 bg-white ">
 
-    <button routerLink="" routerLinkActive="text-green-600" class="flex flex-col items-center flex-shrink-0">
+    <button routerLink="/" routerLinkActive="text-green-600" class="flex flex-col items-center flex-shrink-0">
       <i class="fas fa-store"></i>
       <span>Principal</span>
     </button>

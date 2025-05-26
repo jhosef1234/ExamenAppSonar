@@ -78,7 +78,7 @@
               "zone.js",
               "zone.js/testing"
             ],
-
+            
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               {
@@ -89,7 +89,8 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "karmaConfig": "karma.conf.js"
           }
         }
       }

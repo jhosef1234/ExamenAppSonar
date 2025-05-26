@@ -59,9 +59,30 @@ export class ServiciosService {
 
     // Obtener servicios por tipo de servicio (GET /servicios/tipo-servicio/{tipoServicioId})
     listarServiciosPorTipo(tipoServicioId: string): Observable<any> {
-      return this.http.get(`${this.API}/tipo-servicio/${tipoServicioId}`, this.getAuthHeaders());
+        return this.http.get(`${this.API}/tipo-servicio/${tipoServicioId}`, this.getAuthHeaders());
     }
-    
+
+
+    // Marcar un servicio como favorito (POST /servicios/{id}/favoriteServicio)
+    marcarFavorito(id: number | string): Observable<any> {
+        return this.http.post(`${this.API}/${id}/favoriteServicio`, {}, this.getAuthHeaders()).pipe(
+            tap(res => console.log('Servicio marcado como favorito:', res))
+        );
+    }
+
+    // Eliminar un servicio de favoritos (DELETE /servicios/{id}/favoriteServicio)
+    desmarcarFavorito(id: number | string): Observable<any> {
+        return this.http.delete(`${this.API}/${id}/favoriteServicio`, this.getAuthHeaders()).pipe(
+            tap(res => console.log('Servicio eliminado de favoritos:', res))
+        );
+    }
+
+    // Obtener servicios favoritos del usuario autenticado (GET /servicios/favoritesServicio/{id})
+    listarFavoritos(idUsuario: number): Observable<any> {
+        return this.http.get(`${this.API}/favoritesServicio/${idUsuario}`, this.getAuthHeaders()).pipe(
+            tap(res => console.log('Servicios favoritos obtenidos:', res))
+        );
+    }
 
     // Headers con token de autenticación
     private getAuthHeaders() {
