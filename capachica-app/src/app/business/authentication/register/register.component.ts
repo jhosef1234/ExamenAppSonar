@@ -14,7 +14,7 @@ import { SupabaseService } from '../../../core/services/supabase.service';
   styleUrls: ['./register.component.css'],
 })
 export class RegisterComponent {
-nombre = '';
+  nombre = '';
   apellidos = '';
   telefono = '';
   direccion = '';
@@ -26,6 +26,9 @@ nombre = '';
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   showPassword = false;
+
+  // Bandera para silenciar errores en tests
+  silenceErrors = false;
 
   constructor(
     private authService: AuthService,
@@ -78,7 +81,9 @@ nombre = '';
       try {
         fotoPerfilUrl = await this.subirImagenASupabase(this.selectedFile);
       } catch (error) {
-        console.error('Error al subir imagen:', error);
+        if (!this.silenceErrors) {
+          console.error('Error al subir imagen:', error);
+        }
         Swal.fire('Error', 'No se pudo subir la imagen.', 'error');
         return;
       }
@@ -102,7 +107,9 @@ nombre = '';
         this.router.navigate(['/login']);
       },
       error: (err) => {
-        console.error('Error al registrar:', err);
+        if (!this.silenceErrors) {
+          console.error('Error al registrar:', err);
+        }
         Swal.fire('Error', 'No se pudo registrar el usuario.', 'error');
       }
     });

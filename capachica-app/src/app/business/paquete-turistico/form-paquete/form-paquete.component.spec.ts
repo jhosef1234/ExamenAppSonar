@@ -29,6 +29,8 @@ describe('FormPaqueteComponent', () => {
     emprendimientoService = jasmine.createSpyObj('EmprendimientoService', ['listarEmprendimientos']);
     supabaseService = jasmine.createSpyObj('SupabaseService', ['getClient']);
 
+    spyOn(console, 'error'); // Silencia errores en consola
+
     await TestBed.configureTestingModule({
       imports: [
         RouterTestingModule.withRoutes([]),

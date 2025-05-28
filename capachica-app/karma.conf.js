@@ -1,4 +1,5 @@
-// karma.conf.js
+process.env.CHROME_BIN = require('puppeteer').executablePath();
+
 module.exports = function (config) {
   config.set({
     basePath: '',
@@ -24,20 +25,14 @@ module.exports = function (config) {
       reporters: [
         { type: 'html' },
         { type: 'text-summary' },
-        // <-- Cambiado de "icov" a "lcov"
         { type: 'lcov' }
       ]
     },
 
     reporters: ['progress', 'kjhtml'],
 
-    // browsers: ['Chrome'],     // <— cambia aquí
-    // singleRun: false,         // <— para que no salga al terminar
-    // autoWatch: true,                // salga tras la ejecución
-
-
-    browsers: ['ChromeHeadless'],  // headless para CI/Jenkins
-    singleRun: true,               // salga tras la ejecución
+    browsers: ['ChromeHeadless'],
+    singleRun: true,
     restartOnFileChange: false
   });
 };

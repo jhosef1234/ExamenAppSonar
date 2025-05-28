@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-paquete-turistico',
   standalone: true,
-  imports: [SidebarComponent, NavbarComponent, CommonModule, RouterModule,FormsModule],
+  imports: [SidebarComponent, NavbarComponent, CommonModule, RouterModule, FormsModule],
   templateUrl: './paquete-turistico.component.html',
   styleUrl: './paquete-turistico.component.css'
 })
@@ -22,7 +22,7 @@ export class PaqueteTuristicoComponent {
   paquetesFiltrados: any[] = [];
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private paqueteTuristicoService: PaqueteTuristicoService
   ) {}
 
@@ -40,6 +40,7 @@ export class PaqueteTuristicoComponent {
       },
       error: (err) => {
         console.error('Error al obtener paquetes turísticos:', err);
+        this.isLoading = false; // <-- Corrección clave para que el test pase
       }
     });
   }

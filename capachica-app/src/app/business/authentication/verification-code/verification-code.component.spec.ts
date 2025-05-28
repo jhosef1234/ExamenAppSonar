@@ -1,4 +1,3 @@
-// verification-code.component.spec.ts
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { VerificationCodeComponent } from './verification-code.component';
 import { AuthService } from '../../../core/services/auth.service';
@@ -16,6 +15,8 @@ describe('VerificationCodeComponent', () => {
   beforeEach(async () => {
     authService = jasmine.createSpyObj('AuthService', ['resetPassword']);
 
+    spyOn(console, 'error'); // Silencia errores en consola durante tests
+
     await TestBed.configureTestingModule({
       imports: [
         RouterTestingModule.withRoutes([]),
@@ -29,11 +30,9 @@ describe('VerificationCodeComponent', () => {
     fixture = TestBed.createComponent(VerificationCodeComponent);
     component = fixture.componentInstance;
 
-    // Espiamos sólo una vez el método navigate del Router real
     const realRouter = TestBed.inject(Router);
     routerNavigate = spyOn(realRouter, 'navigate');
 
-    // Espiamos Swal.fire una sola vez
     spyOn(Swal, 'fire');
 
     fixture.detectChanges();
@@ -63,14 +62,13 @@ describe('VerificationCodeComponent', () => {
     component.newPassword = 'newpass';
     authService.resetPassword.and.returnValue(of({}));
 
-    // Configuramos la única vez que espiamos Swal.fire para devolver un "thenable"
     (Swal.fire as jasmine.Spy).and.callFake(() => ({
       then: (cb: () => void) => { cb(); return null; }
     } as any));
 
     component.verificarcodigo();
-    tick(); // resuelve el Observable
-    tick(); // resuelve el thenable
+    tick();
+    tick();
 
     expect(authService.resetPassword).toHaveBeenCalledWith('abc123', 'newpass');
     expect(Swal.fire).toHaveBeenCalledWith(jasmine.objectContaining({
@@ -88,7 +86,7 @@ describe('VerificationCodeComponent', () => {
     authService.resetPassword.and.returnValue(throwError(() => new Error('fail')));
 
     component.verificarcodigo();
-    tick(); // resuelve el Observable con error
+    tick();
 
     expect(Swal.fire).toHaveBeenCalledWith(jasmine.objectContaining({
       icon: 'error',

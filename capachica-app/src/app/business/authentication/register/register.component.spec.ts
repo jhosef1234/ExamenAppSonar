@@ -19,6 +19,8 @@ describe('RegisterComponent', () => {
     authServiceSpy = jasmine.createSpyObj('AuthService', ['register']);
     supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', ['getClient']);
 
+    spyOn(console, 'error'); // silenciar errores en consola durante tests
+
     await TestBed.configureTestingModule({
       imports: [RouterTestingModule.withRoutes([]), RegisterComponent],
       providers: [
@@ -92,6 +94,8 @@ describe('RegisterComponent', () => {
     component.confirmPassword = 'pass';
     authServiceSpy.register.and.returnValue(throwError(() => ({ status: 400 })));
 
+    component.silenceErrors = true;  // <--- Silenciar errores en consola durante este test
+
     component.onSubmit();
     tick();
 
@@ -116,6 +120,8 @@ describe('RegisterComponent', () => {
     const storageStub = { from: jasmine.createSpy('from').and.returnValue(bucketApi) };
     const supabaseClientStub = { storage: storageStub } as unknown as SupabaseClient<any, any, any>;
     supabaseServiceSpy.getClient.and.returnValue(supabaseClientStub);
+
+    component.silenceErrors = true;  // <--- Silenciar errores en consola durante este test
 
     component.onSubmit();
     tick();
