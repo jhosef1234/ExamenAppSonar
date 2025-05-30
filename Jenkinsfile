@@ -44,18 +44,16 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('capachica-app') {
-                    timeout(time: 20, unit: 'MINUTES') {  // aumenté aquí a 20 minutos
                         withSonarQubeEnv('sonarqube') {
                             sh 'npx sonar-scanner'
                         }
-                    }
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 20, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
