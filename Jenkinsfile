@@ -11,7 +11,7 @@ pipeline {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     git branch: 'main',
-                        credentialsId: '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',
+                        credentialsId: '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',
                         url: 'https://github.com/jhosef1234/ExamenAppSonar.git'
                 }
             }
