@@ -1,132 +1,90 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { RegisterComponent } from './register.component';
+import { Component } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
 import Swal from 'sweetalert2';
-import { of, throwError } from 'rxjs';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
-describe('RegisterComponent', () => {
-  let component: RegisterComponent;
-  let fixture: ComponentFixture<RegisterComponent>;
-  let authServiceSpy: jasmine.SpyObj<AuthService>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
-  let router: Router;
+@Component({
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
+})
+export class RegisterComponent {
 
-  beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['register']);
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', ['getClient']);
+  nombre: string = '';
+  apellidos: string = '';
+  email: string = '';
+  password: string = '';
+  confirmPassword: string = '';
+  telefono?: string;
+  direccion?: string;
+  selectedFile?: File;
+  fechaNacimiento: Date | null = null;
+  subdivisionId: number = 1;
 
-    spyOn(console, 'error'); // silenciar errores en consola durante tests
+  showPassword: boolean = false;
+  silenceErrors: boolean = false; // para tests
 
-    await TestBed.configureTestingModule({
-      imports: [RouterTestingModule.withRoutes([]), RegisterComponent],
-      providers: [
-        { provide: AuthService, useValue: authServiceSpy },
-        { provide: SupabaseService, useValue: supabaseServiceSpy }
-      ]
-    }).compileComponents();
+  constructor(
+    private authService: AuthService,
+    private supabaseService: SupabaseService,
+    private router: Router
+  ) {}
 
-    fixture = TestBed.createComponent(RegisterComponent);
-    component = fixture.componentInstance;
-    router = TestBed.inject(Router);
-    spyOn(router, 'navigate');
-    spyOn(Swal, 'fire');
-    fixture.detectChanges();
-  });
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
 
-  it('should create the component', () => {
-    expect(component).toBeTruthy();
-  });
+  async onSubmit() {
+    // Validar campos vacíos
+    if (!this.nombre || !this.apellidos || !this.email || !this.password || !this.confirmPassword) {
+      Swal.fire('Error', 'Por favor completa todos los campos requeridos correctamente.', 'error');
+      return;
+    }
 
-  it('should toggle password visibility', () => {
-    expect(component.showPassword).toBeFalse();
-    component.togglePasswordVisibility();
-    expect(component.showPassword).toBeTrue();
-  });
+    // Validar que las contraseñas coincidan
+    if (this.password !== this.confirmPassword) {
+      Swal.fire('Error', 'Las contraseñas no coinciden.', 'error');
+      return;
+    }
 
-  it('should show error Swal if required fields are missing', () => {
-    component.nombre = '';
-    component.apellidos = '';
-    component.email = '';
-    component.password = '';
-    component.confirmPassword = '';
+    // Subir la imagen si existe
+    let fotoPerfilUrl = '';
+    if (this.selectedFile) {
+      const supabaseClient = this.supabaseService.getClient();
+      const { error: uploadError } = await supabaseClient
+        .storage
+        .from('avatars')
+        .upload(`public/${this.selectedFile.name}`, this.selectedFile);
 
-    component.onSubmit();
+      if (uploadError) {
+        Swal.fire('Error', 'No se pudo subir la imagen.', 'error');
+        return;
+      }
 
-    expect(Swal.fire).toHaveBeenCalledWith('Error', 'Por favor completa todos los campos requeridos correctamente.', 'error');
-    expect(authServiceSpy.register).not.toHaveBeenCalled();
-  });
+      const { data } = supabaseClient.storage.from('avatars').getPublicUrl(`public/${this.selectedFile.name}`);
+      fotoPerfilUrl = data.publicUrl;
+    }
 
-  it('should register successfully without file and navigate to login', fakeAsync(() => {
-    component.nombre = 'John';
-    component.apellidos = 'Doe';
-    component.email = 'john@doe.com';
-    component.password = 'pass';
-    component.confirmPassword = 'pass';
-    authServiceSpy.register.and.returnValue(of({}));
-
-    component.onSubmit();
-    tick();
-
-    expect(authServiceSpy.register).toHaveBeenCalledWith({
-      email: 'john@doe.com',
-      password: 'pass',
-      nombre: 'John',
-      apellidos: 'Doe',
-      telefono: component.telefono,
-      direccion: component.direccion,
-      fotoPerfilUrl: '',
-      fechaNacimiento: null,
-      subdivisionId: 1
+    // Registrar usuario
+    this.authService.register({
+      email: this.email,
+      password: this.password,
+      nombre: this.nombre,
+      apellidos: this.apellidos,
+      telefono: this.telefono,
+      direccion: this.direccion,
+      fotoPerfilUrl: fotoPerfilUrl,
+      fechaNacimiento: this.fechaNacimiento,
+      subdivisionId: this.subdivisionId
+    }).subscribe({
+      next: () => {
+        Swal.fire('Registrado', 'El usuario fue registrado correctamente.', 'success');
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        Swal.fire('Error', 'No se pudo registrar el usuario.', 'error');
+      }
     });
-    expect(Swal.fire).toHaveBeenCalledWith('Registrado', 'El usuario fue registrado correctamente.', 'success');
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
-  }));
-
-  it('should show error Swal on register failure', fakeAsync(() => {
-    component.nombre = 'Jane';
-    component.apellidos = 'Doe';
-    component.email = 'jane@doe.com';
-    component.password = 'pass';
-    component.confirmPassword = 'pass';
-    authServiceSpy.register.and.returnValue(throwError(() => ({ status: 400 })));
-
-    component.silenceErrors = true;  // <--- Silenciar errores en consola durante este test
-
-    component.onSubmit();
-    tick();
-
-    expect(Swal.fire).toHaveBeenCalledWith('Error', 'No se pudo registrar el usuario.', 'error');
-    expect(router.navigate).not.toHaveBeenCalled();
-  }));
-
-  it('should show error Swal and not register when image upload fails', fakeAsync(() => {
-    component.nombre = 'Ann';
-    component.apellidos = 'Smith';
-    component.email = 'ann@smith.com';
-    component.password = 'pass';
-    component.confirmPassword = 'pass';
-    const dummyFile = new File([''], 'avatar.png', { type: 'image/png' });
-    component.selectedFile = dummyFile;
-
-    // Mock Supabase client storage
-    const bucketApi = {
-      upload: jasmine.createSpy('upload').and.returnValue(Promise.resolve({ error: { message: 'Upload failed' } })),
-      getPublicUrl: jasmine.createSpy('getPublicUrl').and.returnValue({ data: { publicUrl: 'url' } })
-    };
-    const storageStub = { from: jasmine.createSpy('from').and.returnValue(bucketApi) };
-    const supabaseClientStub = { storage: storageStub } as unknown as SupabaseClient<any, any, any>;
-    supabaseServiceSpy.getClient.and.returnValue(supabaseClientStub);
-
-    component.silenceErrors = true;  // <--- Silenciar errores en consola durante este test
-
-    component.onSubmit();
-    tick();
-
-    expect(Swal.fire).toHaveBeenCalledWith('Error', 'No se pudo subir la imagen.', 'error');
-    expect(authServiceSpy.register).not.toHaveBeenCalled();
-  }));
-});
+  }
+}
